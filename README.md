@@ -142,8 +142,8 @@ We will work together to review the final implementation and make sure both new 
 
 | Class / Test File | Team Member | Contribution |
 |---|---|---|
-| `HelpRequest.java` |  |  |
-| `HelpRequestTest.java` |  |  |
+| `HelpRequest.java` | Manveen Sidhu | Drafted and revised |
+| `HelpRequestTest.java` | Manveen Sidhu | Drafted and revised |
 | `LinkedQueue.java` |  |  |
 | `OfficeHoursModel.java` |  |  |
 | `OfficeHoursModelTest.java` |  |  |
@@ -151,7 +151,7 @@ We will work together to review the final implementation and make sure both new 
 | `OfficeHoursViewTest.java` |  |  |
 | `OfficeHoursController.java` | Jacob Dial | Drafted and revised office hours controller class |
 | `OfficeHoursControllerTest.java` | Jacob Dial | Drafted and revised office hours controller test class |
-| `OfficeHoursApp.java` |  |  |
+| `OfficeHoursApp.java` | Manveen Sidhu | Drafted and revised |
 
 ### GenAI Note
 
