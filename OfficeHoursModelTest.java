@@ -1,8 +1,8 @@
 import java.util.List;
 import java.util.NoSuchElementException;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
  
 /**
  * Tests the office hours rules in OfficeHoursModel without a view or
@@ -18,7 +18,7 @@ public class OfficeHoursModelTest
     /**
      * Creates an empty model before each test.
      */
-    @Before
+    @BeforeEach
     public void setUp()
     {
         model = new OfficeHoursModel();

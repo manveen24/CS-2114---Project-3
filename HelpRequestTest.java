@@ -1,7 +1,7 @@
 import java.util.Locale;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
  
 /**
  * Tests validation and stored values in HelpRequest.
@@ -16,7 +16,7 @@ public class HelpRequestTest
     /**
      * Creates a request before each test.
      */
-    @Before
+    @BeforeEach
     public void setUp()
     {
         request = new HelpRequest(" Ana ", " Ab01 ", " Loops ");

@@ -1,8 +1,8 @@
 import java.util.List;
 import java.util.NoSuchElementException;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
  
 /**
  * Tests the generic FIFO behavior of LinkedQueue.
@@ -17,7 +17,7 @@ public class LinkedQueueTest
     /**
      * Creates an empty queue before each test.
      */
-    @Before
+    @BeforeEach
     public void setUp()
     {
         queue = new LinkedQueue<String>();

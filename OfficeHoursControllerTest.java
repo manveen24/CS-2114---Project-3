@@ -2,9 +2,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Scanner;
  
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
  
 /**
  * Tests the OfficeHoursController class.
@@ -22,7 +22,7 @@ public class OfficeHoursControllerTest
     /**
      * Sets up the model, view, and controller before each test.
      */
-    @Before
+    @BeforeEach
     public void setUp()
     {
         model = new OfficeHoursModel();

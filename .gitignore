@@ -1,5 +1,4 @@
-/OfficeHoursController.class
-/OfficeHoursControllerTest.class
-/LinkedQueue.class
-/LinkedQueue$Node.class
-/OfficeHoursModel.class
+bin/
+*.class
+.settings/
+.metadata/
