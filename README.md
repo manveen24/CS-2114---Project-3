@@ -147,7 +147,7 @@ We will work together to review the final implementation and make sure both new 
 | `LinkedQueue.java` |  |  |
 | `OfficeHoursModel.java` |  |  |
 | `OfficeHoursModelTest.java` |  |  |
-| `OfficeHoursView.java` |  |  |
+| `OfficeHoursView.java` | Shrey Agarwal | Used ChatGPT to help write the console interface |
 | `OfficeHoursViewTest.java` |  |  |
 | `OfficeHoursController.java` | Jacob Dial | Drafted and revised office hours controller class |
 | `OfficeHoursControllerTest.java` | Jacob Dial | Drafted and revised office hours controller test class |
