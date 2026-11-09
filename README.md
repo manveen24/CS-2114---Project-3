@@ -155,4 +155,4 @@ We will work together to review the final implementation and make sure both new 
 
 ### GenAI Note
 
-[Describe how your team used GenAI, including whether it helped with planning, explanations, writing code, debugging, or creating tests.]
+We used ChatGPT to help identify test coverage for queue operations, input validation, duplicate identifiers, cancellation, and empty-queue behavior. We also asked for guidance on certain program logic, including preserving FIFO order during cancellation and keeping validation in the model. For our proposed Undo Last Serve feature, we asked which classes and methods would change and what additional tests would be needed. We used these suggestions to guide our implementation and test planning; actual test results are documented separately.
