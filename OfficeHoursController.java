@@ -132,7 +132,7 @@ public class OfficeHoursController
 
             showWaitingList();
         }
-        catch (IllegalArgumentException e)
+        catch (IllegalArgumentException | IllegalStateException e)
         {
             view.displayMessage("Unable to join: " + e.getMessage());
         }
@@ -199,7 +199,7 @@ public class OfficeHoursController
 
             showWaitingList();
         }
-        catch (IllegalArgumentException e)
+        catch (IllegalArgumentException | IllegalStateException e)
         {
             view.displayMessage("Unable to cancel: " + e.getMessage());
         }
@@ -214,3 +214,4 @@ public class OfficeHoursController
         running = false;
     }
 }
+ 
