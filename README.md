@@ -145,13 +145,12 @@ We will work together to review the final implementation and make sure both new 
 | `HelpRequest.java` |  |  |
 | `HelpRequestTest.java` |  |  |
 | `LinkedQueue.java` |  |  |
-| `LinkedQueueTest.java` |  |  |
 | `OfficeHoursModel.java` |  |  |
 | `OfficeHoursModelTest.java` |  |  |
 | `OfficeHoursView.java` |  |  |
 | `OfficeHoursViewTest.java` |  |  |
-| `OfficeHoursController.java` |  |  |
-| `OfficeHoursControllerTest.java` |  |  |
+| `OfficeHoursController.java` | Jacob Dial | Drafted and revised office hours controller class |
+| `OfficeHoursControllerTest.java` | Jacob Dial | Drafted and revised office hours controller test class |
 | `OfficeHoursApp.java` |  |  |
 
 ### GenAI Note
