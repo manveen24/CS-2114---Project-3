@@ -144,9 +144,9 @@ We will work together to review the final implementation and make sure both new 
 |---|---|---|
 | `HelpRequest.java` | Manveen Sidhu | Drafted and revised |
 | `HelpRequestTest.java` | Manveen Sidhu | Drafted and revised |
-| `LinkedQueue.java` |  |  |
-| `OfficeHoursModel.java` |  |  |
-| `OfficeHoursModelTest.java` |  |  |
+| `LinkedQueue.java` | Luke Stabler | Drafted and Revised |
+| `OfficeHoursModel.java` | Luke Stabler | Drafted and Revised |
+| `OfficeHoursModelTest.java` | Luke Stabler | Drafted and Revised |
 | `OfficeHoursView.java` | Shrey Agarwal | Used ChatGPT to help write the console interface |
 | `OfficeHoursViewTest.java` |  |  |
 | `OfficeHoursController.java` | Jacob Dial | Drafted and revised office hours controller class |
