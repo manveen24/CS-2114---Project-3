@@ -103,7 +103,7 @@ public class OfficeHoursControllerTest
     @Test
     public void testJoinRequest()
     {
-        createController("Jacob\n001\nJava\n");
+        createController("Jacob\n001\nJava\n4\n");
  
         controller.joinRequest();
  
@@ -120,7 +120,7 @@ public class OfficeHoursControllerTest
     @Test
     public void testJoinRequestInvalidInput()
     {
-        createController(" \n001\nJava\n");
+        createController(" \n001\nJava\n4\n");
  
         controller.joinRequest();
  
@@ -136,7 +136,7 @@ public class OfficeHoursControllerTest
     @Test
     public void testJoinRequestDuplicate()
     {
-        createController("Alex\n001\nQueues\n");
+        createController("Alex\n001\nQueues\n4\n");
  
         model.join("Jacob", "001", "Java");
  
@@ -341,5 +341,88 @@ public class OfficeHoursControllerTest
  
         assertEquals(0, model.getWaitingCount());
     }
+
+
+    /**
+     * Tests that a priority category joins ahead of regular requests.
+     */
+    @Test
+    public void testJoinPriorityCategory()
+    {
+        createController("Alex\n002\nExam\n1\n");
+
+        model.join("Jacob", "001", "Java");
+
+        controller.joinRequest();
+
+        assertEquals("002", model.getWaitingRequests().get(0).getStudentId());
+        assertEquals(1, model.getPriorityCount());
+        assertTrue(output.toString().contains("(priority)"));
+        assertTrue(output.toString().contains("[PRIORITY]"));
+    }
+
+
+    /**
+     * Tests that a regular category joins behind existing requests.
+     */
+    @Test
+    public void testJoinRegularCategory()
+    {
+        createController("Alex\n002\nBug\n3\n");
+
+        model.join("Jacob", "001", "Java");
+
+        controller.joinRequest();
+
+        assertEquals("002", model.getWaitingRequests().get(1).getStudentId());
+        assertEquals(0, model.getPriorityCount());
+        assertTrue(output.toString().contains("Debugging help"));
+    }
+
+
+    /**
+     * Tests that an invalid category is rejected and asked again.
+     */
+    @Test
+    public void testJoinInvalidCategoryReprompts()
+    {
+        createController("Alex\n002\nExam\n9\nabc\n\n2\n");
+
+        controller.joinRequest();
+
+        assertEquals(1, model.getWaitingCount());
+        assertEquals(1, model.getPriorityCount());
+        assertTrue(output.toString().contains("Invalid category"));
+    }
+
+
+    /**
+     * Tests that EOF at the category prompt adds nothing.
+     */
+    @Test
+    public void testJoinEOFAtCategory()
+    {
+        createController("Alex\n002\nExam\n");
+
+        controller.joinRequest();
+
+        assertEquals(0, model.getWaitingCount());
+    }
+
+
+    /**
+     * Tests the full menu flow serving a priority request first.
+     */
+    @Test
+    public void testRunServesPriorityFirst()
+    {
+        createController(
+            "1\nJacob\n001\nJava\n4\n1\nAlex\n002\nExam\n1\n3\n5\n");
+
+        controller.run();
+
+        assertEquals(1, model.getWaitingCount());
+        assertEquals("001", model.getWaitingRequests().get(0).getStudentId());
+        assertTrue(output.toString().contains("Now serving: Alex"));
+    }
 }
- 

@@ -149,4 +149,48 @@ public class OfficeHoursViewTest {
         assertThrows(IllegalArgumentException.class,
             () -> view.displayMessage(null));
     }
+
+    @Test
+    public void testPriorityTagInWaitingList() {
+        ArrayList<HelpRequest> requests = new ArrayList<>();
+
+        requests.add(new HelpRequest("Shrey", "123", "Java", true));
+        requests.add(new HelpRequest("Jacob", "456", "Queues"));
+
+        view.displayWaitingList(requests, 2);
+
+        String result = output.toString();
+
+        assertTrue(result.contains("1. [PRIORITY] Shrey"));
+        assertTrue(result.contains("2. Jacob"));
+    }
+
+    @Test
+    public void testPriorityInCalledRequest() {
+        view.displayCalledRequest(
+            new HelpRequest("Shrey", "123", "Java", true));
+
+        assertTrue(output.toString().contains("Priority: yes"));
+    }
+
+    @Test
+    public void testDisplayCategoryMenu() {
+        view.displayCategoryMenu(HelpCategory.values());
+
+        String result = output.toString();
+
+        assertTrue(result.contains("1. Due today / exam prep [priority]"));
+        assertTrue(result.contains("2. Quick question"));
+        assertTrue(result.contains("3. Debugging help"));
+        assertFalse(result.contains("Debugging help [priority]"));
+        assertTrue(result.contains("4. Concept help"));
+    }
+
+    @Test
+    public void testInvalidCategoryMenu() {
+        assertThrows(IllegalArgumentException.class,
+            () -> view.displayCategoryMenu(null));
+        assertThrows(IllegalArgumentException.class,
+            () -> view.displayCategoryMenu(new HelpCategory[] { null }));
+    }
 }

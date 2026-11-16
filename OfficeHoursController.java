@@ -5,7 +5,7 @@ import java.util.NoSuchElementException;
  * handles user menu choices.
  *
  * @author Jacob Dial
- * @version 2026.11.09
+ * @version 2026.11.16
  */
 public class OfficeHoursController
 {
@@ -122,13 +122,24 @@ public class OfficeHoursController
             return;
         }
 
+        HelpCategory category = readCategory();
+
+        if (category == null)
+        {
+            exit();
+            return;
+        }
+
         try
         {
-            int position = model.join(name, studentId, topic);
+            int position = model.join(name, studentId, topic, category);
 
             view.displayMessage(
                 "Successfully joined the waiting line. Your position is "
                     + position + ".");
+
+            view.displayMessage("Category: " + category.getLabel()
+                + (category.isPriority() ? " (priority)" : ""));
             
             view.displayMessage(
                 "Your estimated waiting time is "
@@ -140,6 +151,37 @@ public class OfficeHoursController
         catch (IllegalArgumentException | IllegalStateException e)
         {
             view.displayMessage("Unable to join: " + e.getMessage());
+        }
+    }
+
+
+    /**
+     * Shows the help categories and reads the student's choice, asking
+     * again after an invalid choice.
+     *
+     * @return the chosen category, or null if input ended
+     */
+    private HelpCategory readCategory()
+    {
+        while (true)
+        {
+            view.displayCategoryMenu(HelpCategory.values());
+
+            String choice = view.readLine("Choose a category: ");
+
+            if (choice == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                return HelpCategory.fromMenuChoice(choice);
+            }
+            catch (IllegalArgumentException e)
+            {
+                view.displayMessage("Invalid category. " + e.getMessage());
+            }
         }
     }
 

@@ -7,7 +7,7 @@ import java.util.Scanner;
  * Handles the console input and output for OfficeHours.
  *
  * @author Shrey Agarwal
- * @version 2026-11-09
+ * @version 2026-11-16
  */
 public class OfficeHoursView {
 
@@ -32,6 +32,34 @@ public class OfficeHoursView {
         output.println("3. Call next student");
         output.println("4. Cancel request");
         output.println("5. Exit");
+    }
+
+    /**
+     * Displays the numbered help categories, marking priority ones.
+     *
+     * @param categories
+     *            the categories to list, in menu order
+     * @throws IllegalArgumentException
+     *             if categories is null or contains null
+     */
+    public void displayCategoryMenu(HelpCategory[] categories) {
+        if (categories == null) {
+            throw new IllegalArgumentException(
+                "Categories cannot be null");
+        }
+
+        output.println("What kind of help do you need?");
+
+        for (int i = 0; i < categories.length; i++) {
+            if (categories[i] == null) {
+                throw new IllegalArgumentException(
+                    "Category cannot be null");
+            }
+
+            output.println("  " + (i + 1) + ". "
+                + categories[i].getLabel()
+                + (categories[i].isPriority() ? " [priority]" : ""));
+        }
     }
 
     public String readLine(String prompt) {
@@ -67,6 +95,10 @@ public class OfficeHoursView {
         output.println("Now serving: " + request.getName());
         output.println("Student ID: " + request.getStudentId());
         output.println("Topic: " + request.getTopic());
+
+        if (request.isUrgent()) {
+            output.println("Priority: yes");
+        }
     }
 
     /**
@@ -124,7 +156,10 @@ public class OfficeHoursView {
                     + estimatedWaitTimes.get(i)
                     + " minutes";
 
+            String tag = request.isUrgent() ? "[PRIORITY] " : "";
+
             output.println((i + 1) + ". "
+                + tag
                 + request.getName()
                 + " (" + request.getStudentId() + ")"
                 + " - " + request.getTopic()

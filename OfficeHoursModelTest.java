@@ -446,4 +446,186 @@ public class OfficeHoursModelTest
         assertEquals(count, model.getWaitingCount());
         assertEquals(before, ids());
     }
+
+    // ----------------------------------------------------------------------
+    // Priority by category
+    // ----------------------------------------------------------------------
+
+    /**
+     * Tests that the three-argument join uses a regular category.
+     */
+    @Test
+    public void testDefaultJoinIsRegular()
+    {
+        model.join("Ana", "A1", "Loops");
+
+        assertEquals(0, model.getPriorityCount());
+        assertFalse(model.getWaitingRequests().get(0).isUrgent());
+    }
+
+
+    /**
+     * Tests that priority categories go ahead of regular requests.
+     */
+    @Test
+    public void testPriorityCategoryServedFirst()
+    {
+        assertEquals(1, model.join("Ana", "A1", "Loops",
+            HelpCategory.CONCEPT));
+        assertEquals(2, model.join("Ben", "B2", "Queues",
+            HelpCategory.DEBUGGING));
+        assertEquals(1, model.join("Cal", "C3", "Exam",
+            HelpCategory.DUE_TODAY));
+
+        assertEquals("c3,a1,b2", ids());
+        assertEquals(1, model.getPriorityCount());
+        assertTrue(model.getWaitingRequests().get(0).isUrgent());
+        assertEquals("Cal", model.callNext().getName());
+        assertEquals("Ana", model.callNext().getName());
+        assertEquals("Ben", model.callNext().getName());
+    }
+
+
+    /**
+     * Tests that both priority categories share one FIFO level.
+     */
+    @Test
+    public void testFifoWithinPriorityLevel()
+    {
+        model.join("Ana", "A1", "Loops", HelpCategory.CONCEPT);
+        model.join("Cal", "C3", "Exam", HelpCategory.DUE_TODAY);
+        model.join("Ben", "B2", "Queues", HelpCategory.DEBUGGING);
+        model.join("Dee", "D4", "Syntax", HelpCategory.QUICK_QUESTION);
+
+        assertEquals("c3,d4,a1,b2", ids());
+        assertEquals(5, model.join("Eve", "E5", "Lists",
+            HelpCategory.CONCEPT));
+        assertEquals(3, model.join("Fay", "F6", "Due",
+            HelpCategory.QUICK_QUESTION));
+        assertEquals("c3,d4,f6,a1,b2,e5", ids());
+    }
+
+
+    /**
+     * Tests that a null category is rejected without a change.
+     */
+    @Test
+    public void testNullCategoryRejected()
+    {
+        model.join("Ana", "A1", "Loops");
+
+        assertThrows(IllegalArgumentException.class,
+            () -> model.join("Ben", "B2", "Queues", null));
+
+        assertEquals("a1", ids());
+        assertEquals(1, model.getWaitingCount());
+    }
+
+
+    /**
+     * Tests that duplicates are rejected across both priority levels.
+     */
+    @Test
+    public void testDuplicateAcrossLevels()
+    {
+        model.join("Cal", "C3", "Exam", HelpCategory.DUE_TODAY);
+        model.join("Ana", "A1", "Loops");
+
+        assertThrows(IllegalStateException.class,
+            () -> model.join("Other", "c3", "Topic"));
+        assertThrows(IllegalStateException.class,
+            () -> model.join("Other", " A1 ", "Topic",
+                HelpCategory.QUICK_QUESTION));
+
+        assertEquals("c3,a1", ids());
+    }
+
+
+    /**
+     * Tests canceling a priority request.
+     */
+    @Test
+    public void testCancelPriority()
+    {
+        model.join("Cal", "C3", "Exam", HelpCategory.DUE_TODAY);
+        model.join("Dee", "D4", "Syntax", HelpCategory.QUICK_QUESTION);
+        model.join("Ana", "A1", "Loops");
+
+        assertTrue(model.cancel("c3"));
+        assertEquals("d4,a1", ids());
+        assertEquals(1, model.getPriorityCount());
+        assertFalse(model.isWaiting("c3"));
+    }
+
+
+    /**
+     * Tests that callNext falls back to regular requests once the priority
+     * level is empty.
+     */
+    @Test
+    public void testCallNextAfterPriorityEmpties()
+    {
+        model.join("Ana", "A1", "Loops");
+        model.join("Cal", "C3", "Exam", HelpCategory.DUE_TODAY);
+
+        assertEquals("Cal", model.callNext().getName());
+        assertEquals(0, model.getPriorityCount());
+        assertEquals("Ana", model.callNext().getName());
+        assertTrue(model.isEmpty());
+        assertThrows(NoSuchElementException.class, () -> model.callNext());
+    }
+
+
+    /**
+     * Tests that a served priority student can rejoin in a regular
+     * category.
+     */
+    @Test
+    public void testRejoinInDifferentCategory()
+    {
+        model.join("Cal", "C3", "Exam", HelpCategory.DUE_TODAY);
+        model.callNext();
+
+        assertEquals(1, model.join("Cal", "C3", "Exam",
+            HelpCategory.CONCEPT));
+        assertFalse(model.getWaitingRequests().get(0).isUrgent());
+    }
+
+
+    /**
+     * Tests that wait estimates follow priority service order.
+     */
+    @Test
+    public void testEstimatesFollowPriorityOrder()
+    {
+        model.join("Ana", "A1", "Loops");
+        model.join("Ben", "B2", "Queues", HelpCategory.QUICK_QUESTION);
+
+        assertEquals("b2,a1", ids());
+        assertEquals("[0, 30]", model.getEstimatedWaitTimes().toString());
+        assertEquals(30, model.getEstimatedWaitMinutes(2));
+    }
+
+
+    /**
+     * Tests a long interleaving of joins, calls, and cancellations across
+     * both levels.
+     */
+    @Test
+    public void testInterleavedPriorityOperations()
+    {
+        model.join("Ana", "A1", "Loops");
+        model.join("Ben", "B2", "Queues", HelpCategory.QUICK_QUESTION);
+        model.join("Cal", "C3", "Exam", HelpCategory.DUE_TODAY);
+        model.join("Dee", "D4", "Bug", HelpCategory.DEBUGGING);
+
+        assertEquals("b2,c3,a1,d4", ids());
+        assertEquals("Ben", model.callNext().getName());
+        assertTrue(model.cancel("a1"));
+        model.join("Eve", "E5", "Lists", HelpCategory.DUE_TODAY);
+
+        assertEquals("c3,e5,d4", ids());
+        assertEquals(2, model.getPriorityCount());
+        assertEquals(3, model.getWaitingCount());
+    }
 }
