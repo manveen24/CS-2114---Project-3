@@ -197,6 +197,8 @@ Keeping the waiting-time calculation in one Model method would also let us repla
 |---|---|---|
 | `HelpRequest.java` | Manveen Sidhu | Drafted and revised |
 | `HelpRequestTest.java` | Manveen Sidhu | Drafted and revised |
+| `HelpCatergory` | Luke Stabler | Drafted and Revised |
+| `HelpCatergoryTest` | Luke Stabler | Drafted and Revised |
 | `LinkedQueue.java` | Luke Stabler | Drafted and Revised |
 | `OfficeHoursModel.java` | Luke Stabler | Drafted and Revised |
 | `OfficeHoursModelTest.java` | Luke Stabler | Drafted and Revised |
