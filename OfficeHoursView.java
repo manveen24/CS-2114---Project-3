@@ -69,19 +69,41 @@ public class OfficeHoursView {
         output.println("Topic: " + request.getTopic());
     }
 
+    /**
+     * Displays the waiting list without time estimates.
+     */
     public void displayWaitingList(
         List<HelpRequest> requests, int total) {
 
+        displayWaitingList(requests, total, null);
+    }
+
+
+    /**
+     * Displays the waiting list with estimated times.
+     */
+    public void displayWaitingList(
+        List<HelpRequest> requests,
+        int total,
+        List<Integer> estimatedWaitTimes) {
+
         if (requests == null || total < 0
-            || requests.size() != total) {
+            || requests.size() != total
+            || (estimatedWaitTimes != null
+                && estimatedWaitTimes.size() != total)) {
+
             throw new IllegalArgumentException(
                 "Invalid waiting list");
         }
 
-        for (HelpRequest request : requests) {
-            if (request == null) {
+        for (int i = 0; i < requests.size(); i++) {
+            if (requests.get(i) == null
+                || (estimatedWaitTimes != null
+                    && (estimatedWaitTimes.get(i) == null
+                        || estimatedWaitTimes.get(i) < 0))) {
+
                 throw new IllegalArgumentException(
-                    "Request cannot be null");
+                    "Invalid waiting list entry");
             }
         }
 
@@ -97,10 +119,16 @@ public class OfficeHoursView {
         for (int i = 0; i < requests.size(); i++) {
             HelpRequest request = requests.get(i);
 
+            String estimate = estimatedWaitTimes == null ? ""
+                : " - Estimated wait: "
+                    + estimatedWaitTimes.get(i)
+                    + " minutes";
+
             output.println((i + 1) + ". "
                 + request.getName()
                 + " (" + request.getStudentId() + ")"
-                + " - " + request.getTopic());
+                + " - " + request.getTopic()
+                + estimate);
         }
     }
 }

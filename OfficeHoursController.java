@@ -129,6 +129,11 @@ public class OfficeHoursController
             view.displayMessage(
                 "Successfully joined the waiting line. Your position is "
                     + position + ".");
+            
+            view.displayMessage(
+                "Your estimated waiting time is "
+                    + model.getEstimatedWaitMinutes(position)
+                    + " minutes.");
 
             showWaitingList();
         }
@@ -146,7 +151,8 @@ public class OfficeHoursController
     {
         view.displayWaitingList(
             model.getWaitingRequests(),
-            model.getWaitingCount());
+            model.getWaitingCount(),
+            model.getEstimatedWaitTimes());
     }
 
 

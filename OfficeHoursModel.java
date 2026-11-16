@@ -1,5 +1,6 @@
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.ArrayList;
  
 /**
  * Model for an office hours waiting line. Owns the FIFO queue of help
@@ -14,6 +15,7 @@ import java.util.NoSuchElementException;
  * @version 2026.11.08
  */
 public class OfficeHoursModel {
+    private static final int ESTIMATED_HELP_MINUTES = 30;
  
     private final LinkedQueue<HelpRequest> waiting;
  
@@ -136,6 +138,42 @@ public class OfficeHoursModel {
      */
     public int getWaitingCount() {
         return waiting.size();
+    }
+    
+    /**
+     * Calculates the estimated waiting time for a student
+     * based on their position in the queue.
+     *
+     * @param position the student's position in line
+     * @return estimated waiting time in minutes
+     */
+    public int getEstimatedWaitMinutes(int position) {
+        if (position < 1 || position > waiting.size()) {
+            throw new IllegalArgumentException(
+                "Invalid waiting position.");
+        }
+
+        return (position - 1) * ESTIMATED_HELP_MINUTES;
+    }
+
+
+    /**
+     * Returns the estimated waiting time for every
+     * student currently in the queue.
+     *
+     * @return list of estimated waiting times
+     */
+    public List<Integer> getEstimatedWaitTimes() {
+        List<Integer> estimates = new ArrayList<>();
+
+        for (int position = 1;
+             position <= waiting.size();
+             position++) {
+
+            estimates.add(getEstimatedWaitMinutes(position));
+        }
+
+        return estimates;
     }
  
  
