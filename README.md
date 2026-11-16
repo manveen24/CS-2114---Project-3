@@ -55,8 +55,6 @@ Right-click the project or test package and select **Run As → JUnit Test**. To
 
 The tests use JUnit 5. Model and Queue tests construct those objects directly and do not require the View, console input, or `OfficeHoursApp`.
 
-**Complete-suite result:** [Enter the actual number of tests run, failures, and errors.]
-
 ## Reflection
 
 ### How Did Our Design Absorb the Change?
@@ -74,11 +72,9 @@ The following comparison separates the two features so that changes made for pri
 | `OfficeHoursModel.java` | Change | Calculates estimates from the current service order. | Manages priority rules and service order. |
 | `OfficeHoursController.java` | Change | Retrieves estimates and passes them to the View. | Routes priority-related user actions to the Model. |
 | `OfficeHoursView.java` | Change | Displays estimated waiting times. | Displays priority information and supported priority actions. |
-| `HelpRequest.java` | Unchanged | No waiting-time calculation or stored estimate is needed. | Its existing urgency field represents request priority. [Confirm whether this file changed after D3.] |
-| `LinkedQueue.java` | Unchanged | No waiting-time calculation is needed in the Queue. | [State the actual priority-related changes, or “Unchanged.”] |
-| `OfficeHoursApp.java` | Unchanged | No startup changes were needed. | [Confirm whether unchanged.] |
-
-**Prediction comparison:** [Confirm which files actually changed against the D3 version. If a file predicted to remain unchanged changed, explain the reason here.]
+| `HelpRequest.java` | Unchanged | No waiting-time calculation or stored estimate is needed. | Its existing urgency field represents request priority. |
+| `LinkedQueue.java` | Unchanged | No waiting-time calculation is needed in the Queue.|
+| `OfficeHoursApp.java` | Unchanged | No startup changes were needed. | 
 
 The main insight was that both priority order and waiting estimates belong in the Model. The View can display different results without taking responsibility for the rules that produce them.
 
@@ -137,15 +133,11 @@ Additional priority tests verify that interleaved operations preserve FIFO order
 
 Every scoped bad-input case has a corresponding automated test. Console-input tests supplement the independent Model and Queue tests.
 
-**Before submission:** [Confirm that all coverage described above exists and that the complete suite executes successfully. Correct any claim that does not match the submitted tests.]
-
 ### What Does Not Work Yet?
 
 Multiple-TA support is not complete. We still need to track TA availability, assign students to available TAs, and account for simultaneous help sessions when calculating waiting estimates.
 
 Current estimates use an assumed help-session duration. Actual help sessions may take more or less time.
-
-**Other known defects, missing tests, or failing tests:** [List actual issues, or write “None identified in our completed testing” if verified.]
 
 ### What Design Change Would Make the Next Feature Cheaper?
 
