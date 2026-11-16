@@ -9,7 +9,7 @@ Student identifiers must be unique among active requests. Once a request has bee
 
 Our second prototype implements two stretch goals:
 
-- **Priority queue:** Higher-priority requests are served before regular requests. Requests at the same priority level maintain FIFO order.
+- **Priority queue:** Students choose a help category when they join. *Due today / exam prep* and *Quick question* are priority categories and are served before *Debugging help* and *Concept help*. Requests at the same priority level maintain FIFO order.
 - **Estimated waiting times:** The waiting list displays estimated waits based on the current service order and an estimated help-session duration.
 
 Support for multiple TAs is our remaining feature for the final build.
@@ -22,7 +22,8 @@ The application follows Model–View–Controller.
 | --- | --- |
 | `HelpRequest` | Stores an immutable, validated help request, including its priority status. |
 | `LinkedQueue<T>` | Stores requests using linked nodes and provides the queue operations used by the Model. |
-| `OfficeHoursModel` | Owns the waiting line, enforces request rules, manages priority ordering, and calculates waiting estimates. |
+| `HelpCategory` | Defines the four help categories and which ones are priority, so the priority rule lives in one place. |
+| `OfficeHoursModel` | Owns the waiting line as two `LinkedQueue`s (priority and regular), enforces request rules, serves priority requests first, and calculates waiting estimates. |
 | `OfficeHoursView` | Reads console input and formats menus, requests, estimated waits, and messages. |
 | `OfficeHoursController` | Routes user actions to the Model and passes current results to the View. |
 | `OfficeHoursApp` | Creates the application objects and starts the Controller. |
@@ -44,7 +45,7 @@ The private nested `Node` class inside `LinkedQueue` stores an entry and its nex
 
 1. Right-click `OfficeHoursApp.java`.
 2. Select **Run As → Java Application**.
-3. Use the console menu to submit requests, display the waiting line, call students, cancel requests, and access priority handling.
+3. Use the console menu to submit requests, display the waiting line, call students, and cancel requests. When joining, choose a help category; priority categories are served first and marked `[PRIORITY]` in the waiting line.
 4. Display the waiting line to see the current service order and estimated waiting times.
 
 Waiting times are estimates, not guaranteed appointment times.
@@ -63,18 +64,19 @@ Our D3 prediction named estimated waiting times as our change feature. We predic
 
 Estimated waiting times fit the existing MVC structure. The Model calculates estimates, the Controller retrieves them, and the View displays them. A waiting estimate is derived from the current service order rather than stored permanently in a request. This prevents a request from keeping an outdated estimate after another student joins, is served, or cancels.
 
-We also implemented priority handling. This adds service-order logic beyond our original FIFO MVP. FIFO still applies within each priority level.
+We also implemented priority handling. The student's chosen `HelpCategory` determines the priority level. The Model keeps two FIFO `LinkedQueue`s, one for priority requests and one for regular requests, and `callNext()` serves the priority queue first. FIFO therefore applies automatically within each level, and `enqueue`/`dequeue` remain O(1).
 
 The following comparison separates the two features so that changes made for priority handling are not incorrectly attributed to waiting estimates.
 
 | File | D3 waiting-time prediction | Actual waiting-time change | Priority-related change |
 | --- | --- | --- | --- |
-| `OfficeHoursModel.java` | Change | Calculates estimates from the current service order. | Manages priority rules and service order. |
-| `OfficeHoursController.java` | Change | Retrieves estimates and passes them to the View. | Routes priority-related user actions to the Model. |
-| `OfficeHoursView.java` | Change | Displays estimated waiting times. | Displays priority information and supported priority actions. |
-| `HelpRequest.java` | Unchanged | No waiting-time calculation or stored estimate is needed. | Its existing urgency field represents request priority. |
-| `LinkedQueue.java` | Unchanged | No waiting-time calculation is needed in the Queue.|
-| `OfficeHoursApp.java` | Unchanged | No startup changes were needed. | 
+| `OfficeHoursModel.java` | Change | Calculates estimates from the current service order. | Stores priority and regular requests in two queues and serves priority first. |
+| `OfficeHoursController.java` | Change | Retrieves estimates and passes them to the View. | Asks for a help category when joining and re-prompts after an invalid choice. |
+| `OfficeHoursView.java` | Change | Displays estimated waiting times. | Displays the category menu and marks priority requests. |
+| `HelpRequest.java` | Unchanged | No waiting-time calculation or stored estimate is needed. | Unchanged. Its existing urgency field stores the priority level. |
+| `LinkedQueue.java` | Unchanged | No waiting-time calculation is needed in the Queue. | Unchanged. The Model uses two instances of the existing generic queue. |
+| `OfficeHoursApp.java` | Unchanged | No startup changes were needed. | Unchanged. |
+| `HelpCategory.java` | Not predicted | Not applicable. | New. Defines categories and their priority levels. |
 
 The main insight was that both priority order and waiting estimates belong in the Model. The View can display different results without taking responsibility for the rules that produce them.
 
@@ -96,6 +98,8 @@ Estimated waiting times were implemented as planned. We also implemented priorit
 
 Our earlier description stated that the first student to join would always be the first called. The updated rule is that requests are served by priority, with FIFO order preserved within the same priority level.
 
+Our first priority implementation let the TA promote a waiting student. We replaced it because the TA had no information about who needed priority. Students now choose a help category when joining, and fixed rules map each category to a priority level. This makes the decision objective and consistent.
+
 Waiting estimates follow the actual service order, including priority changes. They must therefore be refreshed when an action changes that order.
 
 We shifted our remaining stretch-goal work from History and Statistics to multiple-TA support. We are prioritizing the ability to represent several TAs helping students during the same session.
@@ -115,9 +119,9 @@ Our Model and Queue tests run independently of the View. They check returned res
 | Queue insertion and removal | Maintain correct order and size. | Handle invalid entries and empty removal according to the Queue contract. |
 | Queue peek | Return the front entry without removing it. | Handle an empty queue according to its contract. |
 | Queue boundaries | Remove the final entry, then successfully add another. | Verify that empty-state front and rear references do not break later operations. |
-| Priority | Serve higher-priority requests first and preserve FIFO within a priority level. | Reject invalid priority actions without changing valid queue state. |
+| Priority | Serve higher-priority requests first and preserve FIFO within a priority level. | Reject invalid category choices by asking again, and reject a null category without changing queue state. |
 | Waiting estimates | Calculate estimates for the first and later requests in service order. | Handle an empty line and ensure estimates are never negative. |
-| State changes | Refresh estimates after joining, calling, cancellation, and priority changes. | Rejected operations leave request order, count, and estimates unchanged. |
+| State changes | Refresh estimates after joining, calling, cancellation, and priority joins. | Rejected operations leave request order, count, and estimates unchanged. |
 | Console input | Accept supported menu choices. | Handle nonnumeric input, unsupported choices, and end-of-input without an unhandled exception. |
 
 Each core Model and Queue method has a normal test and an applicable bad-input or boundary test. Methods without input parameters are checked in relevant empty and nonempty states.
@@ -133,11 +137,15 @@ Additional priority tests verify that interleaved operations preserve FIFO order
 
 Every scoped bad-input case has a corresponding automated test. Console-input tests supplement the independent Model and Queue tests.
 
+**Most recent run:** [X] tests, [X] passed, 0 failed (Eclipse, JUnit 5, November 16, 2026).
+
 ### What Does Not Work Yet?
 
 Multiple-TA support is not complete. We still need to track TA availability, assign students to available TAs, and account for simultaneous help sessions when calculating waiting estimates.
 
 Current estimates use an assumed help-session duration. Actual help sessions may take more or less time.
+
+Regular requests can wait indefinitely if priority requests keep arriving. Aging (moving long-waiting requests into the priority level) would prevent this but is not implemented.
 
 ### What Design Change Would Make the Next Feature Cheaper?
 
@@ -165,7 +173,7 @@ Keeping the waiting-time calculation in one Model method would also let us repla
 
 | Feature | Status | Remaining work |
 | --- | --- | --- |
-| Priority queue | Implemented | Regression testing of priority rules and FIFO order within each priority level. |
+| Priority queue | Implemented (category-based) | Regression testing; optional aging to prevent starvation of regular requests. |
 | Estimated waiting times | Implemented | Regression testing and adaptation for multiple TAs. |
 | Multiple TAs | Committed for the final build | Availability tracking, assignments, completion handling, updated estimates, and tests. |
 | History and Statistics | Dropped from the final-build scope | No further implementation planned. |
@@ -176,7 +184,7 @@ Keeping the waiting-time calculation in one Model method would also let us repla
 | --- | --- |
 | 0:00–0:20 | Introduce the application and briefly explain Model, View, and Controller responsibilities. |
 | 0:20–0:50 | Add regular requests and display their FIFO order and estimated waits. |
-| 0:50–1:20 | Use the implemented priority action and show the updated service order and estimates. |
+| 0:50–1:20 | Join a student with a priority category (Due today) and show that they move ahead of regular requests, with updated estimates. |
 | 1:20–1:45 | Call the next student and display the refreshed waiting line. |
 | 1:45–2:05 | Cancel a request and show the updated order and estimates. |
 | 2:05–2:25 | Demonstrate duplicate and invalid input without crashing or changing valid queue data. |
