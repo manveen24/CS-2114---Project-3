@@ -1,142 +1,195 @@
-# CS-2114---Project-3
+# Project 3 — Office Hours Queue
+## Deliverable 4: Second Prototype + Tests
+
 ## Prototype Overview
 
-Our application manages a student office hours waiting line using a
-linked Queue ADT. Students join with a name, student identifier, and
-help topic. The TA can display the line, call the next student, and
-cancel a waiting request.The MVP uses FIFO order: the first student to join is the first
-student called. Student identifiers are unique among active requests.
-Once a student has been called or canceled, that identifier can join
-again.
+Our application manages a student office hours waiting line using a linked Queue ADT. Students submit their name, student identifier, and help topic. The TA can display the waiting line, call the next student, and cancel a waiting request.
 
-The prototype uses Model–View–Controller:
+Student identifiers must be unique among active requests. Once a request has been served or canceled, that identifier may join again. Names, identifiers, and topics are validated before a request is accepted.
 
-Project Structure
+Our second prototype implements two stretch goals:
 
-  -HelpRequest.java – Stores information about an individual help request and validates its fields.
+- **Priority queue:** Higher-priority requests are served before regular requests. Requests at the same priority level maintain FIFO order.
+- **Estimated waiting times:** The waiting list displays estimated waits based on the current service order and an estimated help-session duration.
 
-  -LinkedQueue.java – Implements a generic first-in, first-out queue.
+Support for multiple TAs is our remaining feature for the final build.
 
-  -OfficeHoursModel.java – Manages the waiting line and the rules for joining, calling, and canceling requests.
- 
-  -OfficeHoursView.java – Handles console input and displays menus, messages, and the waiting list.
+## Project Structure
 
-  -OfficeHoursController.java – Handles menu choices and coordinates the Model and View.
+The application follows Model–View–Controller.
 
-  -OfficeHoursApp.java – Creates the application objects and starts the program.
+| Class | Responsibility |
+| --- | --- |
+| `HelpRequest` | Stores an immutable, validated help request, including its priority status. |
+| `LinkedQueue<T>` | Stores requests using linked nodes and provides the queue operations used by the Model. |
+| `OfficeHoursModel` | Owns the waiting line, enforces request rules, manages priority ordering, and calculates waiting estimates. |
+| `OfficeHoursView` | Reads console input and formats menus, requests, estimated waits, and messages. |
+| `OfficeHoursController` | Routes user actions to the Model and passes current results to the View. |
+| `OfficeHoursApp` | Creates the application objects and starts the Controller. |
 
-  
+The private nested `Node` class inside `LinkedQueue` stores an entry and its next reference.
 
-# How to Run
-- Java and Eclipse configured for CS 2114.
-- All source files in the same project and package.
-- The course-provided `student.jar` and the JUnit configuration used
-  by our course for tests extending `student.TestCase`.
+## How to Compile and Run
 
+### Setup
+
+1. Open or import the Java project in Eclipse.
+2. Use the JDK configured for CS 2114.
+3. Keep source and test files in their declared package.
+4. Add JUnit 5 through **Build Path → Add Libraries → JUnit → JUnit 5**.
+5. Include any course-provided libraries required by the submitted source files.
+6. Select **Project → Build Project** and confirm that the project compiles without errors.
+
+### Run the Application
+
+1. Right-click `OfficeHoursApp.java`.
+2. Select **Run As → Java Application**.
+3. Use the console menu to submit requests, display the waiting line, call students, cancel requests, and access priority handling.
+4. Display the waiting line to see the current service order and estimated waiting times.
+
+Waiting times are estimates, not guaranteed appointment times.
+
+### Run the Tests
+
+Right-click the project or test package and select **Run As → JUnit Test**. To run an individual test file, right-click that file and select **Run As → JUnit Test**.
+
+The tests use JUnit 5. Model and Queue tests construct those objects directly and do not require the View, console input, or `OfficeHoursApp`.
+
+**Complete-suite result:** [Enter the actual number of tests run, failures, and errors.]
 
 ## Reflection
 
-What Changed From the Specification?
+### How Did Our Design Absorb the Change?
 
-Our original specification planned to separate the program into a Model, View, and Controller, with each class having a specific responsibility. We have kept that overall design.
+Our D3 prediction named estimated waiting times as our change feature. We predicted changes to `OfficeHoursModel`, `OfficeHoursController`, and `OfficeHoursView`, while `HelpRequest` and `LinkedQueue` would remain unchanged for that feature.
 
-The HelpRequest class includes validation for the student's name, student ID, and help topic. It also normalizes student IDs by trimming whitespace and converting them to lowercase. This helps prevent duplicate requests that use different capitalization or extra spaces. The class also includes an urgent field for possible priority functionality.
+Estimated waiting times fit the existing MVC structure. The Model calculates estimates, the Controller retrieves them, and the View displays them. A waiting estimate is derived from the current service order rather than stored permanently in a request. This prevents a request from keeping an outdated estimate after another student joins, is served, or cancels.
 
-The OfficeHoursController follows the planned menu structure. It reads menu choices as complete lines, handles options 1 through 5, and calls the appropriate Model methods. It also handles invalid input and end-of-file situations. Validation of student information is left to the Model and HelpRequest, rather than being duplicated in the Controller.
+We also implemented priority handling. This adds service-order logic beyond our original FIFO MVP. FIFO still applies within each priority level.
 
-Some of the planned functionality and testing still needs to be checked against the completed Model and View. We will update this section if our final implementation changes any method signatures, class responsibilities, or test cases.
+The following comparison separates the two features so that changes made for priority handling are not incorrectly attributed to waiting estimates.
 
-## Did the Model Stand Alone?
+| File | D3 waiting-time prediction | Actual waiting-time change | Priority-related change |
+| --- | --- | --- | --- |
+| `OfficeHoursModel.java` | Change | Calculates estimates from the current service order. | Manages priority rules and service order. |
+| `OfficeHoursController.java` | Change | Retrieves estimates and passes them to the View. | Routes priority-related user actions to the Model. |
+| `OfficeHoursView.java` | Change | Displays estimated waiting times. | Displays priority information and supported priority actions. |
+| `HelpRequest.java` | Unchanged | No waiting-time calculation or stored estimate is needed. | Its existing urgency field represents request priority. [Confirm whether this file changed after D3.] |
+| `LinkedQueue.java` | Unchanged | No waiting-time calculation is needed in the Queue. | [State the actual priority-related changes, or “Unchanged.”] |
+| `OfficeHoursApp.java` | Unchanged | No startup changes were needed. | [Confirm whether unchanged.] |
 
-Our design intended for the Model to work independently of the View. The Model should manage the waiting queue and enforce the rules for joining, calling, and canceling requests without displaying messages or reading console input.
+**Prediction comparison:** [Confirm which files actually changed against the D3 version. If a file predicted to remain unchanged changed, explain the reason here.]
 
-The Controller is responsible for passing information between the Model and View. For example, it gets a waiting-list snapshot from the Model and gives that information to the View to display.
+The main insight was that both priority order and waiting estimates belong in the Model. The View can display different results without taking responsibility for the rules that produce them.
 
-We intend to keep this separation in the final implementation. The Model should not import or depend on the View, and the View should not directly access the Model or its queue. If any implementation changes require moving responsibilities across this boundary, we will document those changes here.
+### Did the Change Cross the Model/View Line?
 
-# What Happened to Our Unknowns?
-In our original scope, we identified four things we were unsure how to implement:
+The new information passes through the existing MVC boundary, but business logic remains in the Model.
 
-  Queue: How do we update the front and rear references after removing the final student? We still need to make sure the queue correctly          handles becoming empty after a removal.
+The Model manages the waiting line, determines service order, and calculates estimates. It does not read console input, print messages, or call the View.
 
-  Traversal: How can we display the queue without removing elements? We figured this out by using a waiting-list snapshot so the requests can     be displayed without changing the actual queue.
+The Controller receives user actions, calls the appropriate Model operations, and retrieves fresh display information. The View formats the information supplied by the Controller.
 
-  Duplicates: How can we detect repeated identifiers while preserving FIFO order? We plan to handle this through the Model by checking whether    a student ID is already in the waiting line before adding a new request.
+The View now knows how to display priority and estimated minutes. It does not need to know how linked nodes work or how the Model determines service order.
 
-  Testing: How do we verify invalid operations leave the queue unchanged? We figured this out by testing that rejected operations do not change   the waiting count or the contents and order of the waiting list.
+The View keeps no persistent copy of the waiting queue, request count, priority assignments, or waiting estimates. It uses the data supplied for the current display call. After a state-changing action, the Controller retrieves current information again.
 
-We have figured out traversal and testing. Queue removal and duplicate detection still need to be fully verified in our final implementation.
+### What Changed From Our D3 Plan?
 
-# What still needs work
-The MVP still needs to be fully integrated and tested. In particular, we need to confirm that:
-- Students can join the waiting line with valid information.
-- Invalid names, student IDs, and topics are rejected.
-- Duplicate active student IDs are rejected.
-- Students can cancel their own waiting requests.
-- The next student can be called in FIFO order.
-- The waiting list displays the correct requests and positions.
-- The program handles an empty queue and unexpected input without crashing.
-- All test files compile and pass together.
+Estimated waiting times were implemented as planned. We also implemented priority handling, which expands the original FIFO behavior.
+
+Our earlier description stated that the first student to join would always be the first called. The updated rule is that requests are served by priority, with FIFO order preserved within the same priority level.
+
+Waiting estimates follow the actual service order, including priority changes. They must therefore be refreshed when an action changes that order.
+
+We shifted our remaining stretch-goal work from History and Statistics to multiple-TA support. We are prioritizing the ability to represent several TAs helping students during the same session.
+
+We also expanded testing to include priority ordering, waiting estimates, and Queue order after interleaved operations. Our test instructions now describe JUnit 5, matching the annotations and assertions used in our tests.
+
+### Testing and Bad Input
+
+Our Model and Queue tests run independently of the View. They check returned results and observable state, including waiting count, request order, and estimates.
+
+| Area | Normal cases | Invalid-input or boundary cases |
+| --- | --- | --- |
+| Request validation | Valid fields, trimming, and identifier normalization. | Null, blank, overlength, and control-character input. |
+| Joining | Accept a valid request and update the waiting line. | Reject duplicate active identifiers, including differences in capitalization or surrounding spaces. |
+| Calling | Remove the next request according to priority and FIFO rules. | Handle an empty waiting line according to the Model contract. |
+| Cancellation | Remove the selected request while preserving the order of others. | Handle invalid or missing identifiers without changing valid requests. |
+| Queue insertion and removal | Maintain correct order and size. | Handle invalid entries and empty removal according to the Queue contract. |
+| Queue peek | Return the front entry without removing it. | Handle an empty queue according to its contract. |
+| Queue boundaries | Remove the final entry, then successfully add another. | Verify that empty-state front and rear references do not break later operations. |
+| Priority | Serve higher-priority requests first and preserve FIFO within a priority level. | Reject invalid priority actions without changing valid queue state. |
+| Waiting estimates | Calculate estimates for the first and later requests in service order. | Handle an empty line and ensure estimates are never negative. |
+| State changes | Refresh estimates after joining, calling, cancellation, and priority changes. | Rejected operations leave request order, count, and estimates unchanged. |
+| Console input | Accept supported menu choices. | Handle nonnumeric input, unsupported choices, and end-of-input without an unhandled exception. |
+
+Each core Model and Queue method has a normal test and an applicable bad-input or boundary test. Methods without input parameters are checked in relevant empty and nonempty states.
+
+We specifically test interleaved operations:
+
+1. Enqueue A and B.
+2. Dequeue A.
+3. Enqueue C.
+4. Verify that the remaining removal order is B, then C.
+
+Additional priority tests verify that interleaved operations preserve FIFO order among requests with equal priority.
+
+Every scoped bad-input case has a corresponding automated test. Console-input tests supplement the independent Model and Queue tests.
+
+**Before submission:** [Confirm that all coverage described above exists and that the complete suite executes successfully. Correct any claim that does not match the submitted tests.]
+
+### What Does Not Work Yet?
+
+Multiple-TA support is not complete. We still need to track TA availability, assign students to available TAs, and account for simultaneous help sessions when calculating waiting estimates.
+
+Current estimates use an assumed help-session duration. Actual help sessions may take more or less time.
+
+**Other known defects, missing tests, or failing tests:** [List actual issues, or write “None identified in our completed testing” if verified.]
+
+### What Design Change Would Make the Next Feature Cheaper?
+
+A Model-owned representation of TA availability and current assignments would make multiple-TA support easier to implement. Assignment and completion operations could update that state in one place, and waiting-time calculations could use it directly.
+
+The Controller would route assignment and completion actions. The View would receive a snapshot of TA status and waiting information without accessing internal collections.
+
+Keeping the waiting-time calculation in one Model method would also let us replace the single-TA calculation without duplicating logic across the application.
 
 ## Next Steps
-Our MVP features have been implemented. Our next step is to fully test the existing functionality and make sure everything works correctly before adding new features. We plan to:
--Run all existing test files and fix any failing tests.
--Test joining, canceling, and calling students through the console.
--Test invalid names, student IDs, topics, duplicate requests, and other bad-input cases.
--Verify that the waiting list maintains FIFO order and displays the correct information.
--Confirm that the application handles an empty queue and unexpected input without crashing.
 
-# Our change feature
-For Deliverable 4, we plan to add estimated waiting times to the waiting list. The application will estimate how long each student may have to wait before receiving help. We predict this feature will affect:
+### Remaining Work for the Final Build
 
-OfficeHoursModel: Calculate estimated waiting times based on the number of students ahead in line and an estimated average help-session duration.
+| Order | Work | Owner |
+| --- | --- | --- |
+| 1 | Define rules for TA availability, assignment, and completion of a help session. | All members |
+| 2 | Add Model state and operations for multiple TAs, including validation and independent tests. | Manveen |
+| 3 | Verify that priority and FIFO ordering remain correct as available TAs receive students. | Shrey |
+| 4 | Integrate TA actions through the Controller and update waiting-estimate retrieval. | Jacob |
+| 5 | Display TA availability and assignments in the View and complete application integration. | Luke |
+| 6 | Run the complete regression suite and fix remaining failures. | All members |
+| 7 | Update the README, verify attribution, and rehearse the final demonstration. | All members |
 
-OfficeHoursView: Display the estimated waiting time next to each student's request.
+### Stretch Goals: Committed and Dropped
 
-OfficeHoursController: Retrieve the waiting-list information and pass it to the View.
+| Feature | Status | Remaining work |
+| --- | --- | --- |
+| Priority queue | Implemented | Regression testing of priority rules and FIFO order within each priority level. |
+| Estimated waiting times | Implemented | Regression testing and adaptation for multiple TAs. |
+| Multiple TAs | Committed for the final build | Availability tracking, assignments, completion handling, updated estimates, and tests. |
+| History and Statistics | Dropped from the final-build scope | No further implementation planned. |
 
-We expect HelpRequest.java and LinkedQueue.java will not need changes because estimated waiting times can be calculated using the existing request and queue information.We will compare this prediction with the actual changes made during Deliverable 4.
+### Timed Three-Minute Demo
 
-# Which stretch goals will we attempt?
-
-We plan to implement and test these additional features:
-
-Estimated waiting times: Show students an estimate of how long they may wait before being called. The estimate will be based on the number of students ahead of them and the average time spent helping each student.
-
-History and Statistics: Record the topics students most frequently ask for help with. This will allow teaching assistants to identify concepts students are struggling with and report those areas to the professor. We plan to track topic counts and provide a way to view the most frequently requested topics.
-
-
-# What new tests will we need?
-
-We will add tests for both new features.
-
-Estimated waiting times:
--Calculating the estimated wait for the first student.
--Calculating estimates for students farther back in the line.
--Updating estimates when a student joins, cancels, or gets called.
--Handling an empty waiting line.
--Making sure estimates are never negative.
-
-History and Statistics:
--Recording the topic when a student submits a help request.
--Counting how often each topic is requested.
--Identifying the most frequently requested topics.
--Treating topics with different capitalization or extra whitespace consistently.
--Confirming that statistics update correctly as new requests are added.
--Handling an empty statistics report.
-
-#Who does what?
-We will divide the remaining work among the team members:
-
-Jacob - OfficeHoursController, estimated waiting-time integration, and related tests
-
-Shrey - LinkedQueue review, support for new features if needed, and related tests
-
-Manveen- HelpRequest and OfficeHoursModel updates for history and statistics, and related tests
-
-Luke - OfficeHoursApp, OfficeHoursView updates, and integration testing
-
-We will work together to review the final implementation and make sure both new features work correctly with the existing application.
+| Time | Demonstration |
+| --- | --- |
+| 0:00–0:20 | Introduce the application and briefly explain Model, View, and Controller responsibilities. |
+| 0:20–0:50 | Add regular requests and display their FIFO order and estimated waits. |
+| 0:50–1:20 | Use the implemented priority action and show the updated service order and estimates. |
+| 1:20–1:45 | Call the next student and display the refreshed waiting line. |
+| 1:45–2:05 | Cancel a request and show the updated order and estimates. |
+| 2:05–2:25 | Demonstrate duplicate and invalid input without crashing or changing valid queue data. |
+| 2:25–2:50 | Show passing tests for independent Model behavior, priority ordering, waiting estimates, and interleaved Queue operations. |
+| 2:50–3:00 | Identify the classes changed and explain the remaining multiple-TA work. |
 
 ## Attribution
 
@@ -148,11 +201,10 @@ We will work together to review the final implementation and make sure both new 
 | `OfficeHoursModel.java` | Luke Stabler | Drafted and Revised |
 | `OfficeHoursModelTest.java` | Luke Stabler | Drafted and Revised |
 | `OfficeHoursView.java` | Shrey Agarwal | Used ChatGPT to help write the console interface |
-| `OfficeHoursViewTest.java` |  |  |
+| `OfficeHoursViewTest.java` | Shrey Agarwal | Used ChatGPT to help write the console interface |
 | `OfficeHoursController.java` | Jacob Dial | Drafted and revised office hours controller class |
 | `OfficeHoursControllerTest.java` | Jacob Dial | Drafted and revised office hours controller test class |
 | `OfficeHoursApp.java` | Manveen Sidhu | Drafted and revised |
-
 ### GenAI Note
 
-We used ChatGPT to help identify test coverage for queue operations, input validation, duplicate identifiers, cancellation, and empty-queue behavior. We also asked for guidance on certain program logic, including preserving FIFO order during cancellation and keeping validation in the model. For our proposed Undo Last Serve feature, we asked which classes and methods would change and what additional tests would be needed. We used these suggestions to guide our implementation and test planning; actual test results are documented separately.
+We used ChatGPT to help review our MVC design, suggest normal and bad-input test cases, assist with portions of `HelpRequest` and its tests, and draft README wording. We also requested guidance about implementing and testing stretch goals.
